@@ -80,8 +80,10 @@ function setup() {
 }
 
 function draw() {
-  applyGravity();
-  checkCollisions();
+  //the player will fall onto the platform and the user can start playing the game.
+  applyGravity(player.velocity.y =+ GRAVITY * 5);
+  checkCollisions ();
+  player.collide(platforms, platformCollision);
   updatePlayer();
   updateDisplay();
   drawSprites();
@@ -124,6 +126,7 @@ function createPlayer() {
   player.scale = 0.25;
   player.setCollider("rectangle", 0, 0, 250, 490);
   //player.debug = true;
+
 }
 
 // Creates a platform of specified length (len) at x, y.
@@ -180,7 +183,6 @@ function createCollectable(x, y) {
 // function calls executeLoss(). If a monster falls off the screen, it is
 // removed from the game.
 function applyGravity() {
-
 }
 
 // Called in the draw() function. Continuously checks for collisions and overlaps
@@ -193,7 +195,9 @@ function checkCollisions() {
 // Callback function that runs when the player or a monster collides with a
 // platform.
 function platformCollision(sprite, platform) {
-
+  if(sprite === player && sprite.touching.bottom) {
+    sprite.velocity.y = 0;
+  }
 }
 
 // Callback function that runs when the player collides with a monster.
@@ -210,13 +214,19 @@ function getCollectable(player, collectable) {
 // all of the relevant "check" functions below.
 function updatePlayer() {
   //console.log("Player x: " + player.position.x + " Player y: " + player.position.y);
-
+checkIdle();
+checkFalling();
+checkJumping();
+checkMovingLeftRight();
 }
 
 // Check if the player is idle. If neither left nor right are being pressed and the
 // player is grounded, set player's animation to "idle", and change her
 // x velocity to 0.
 function checkIdle() {
+  if (!keyIsDown (LEFT_ARROW) && !keyIsDown(RIGHT_ARROW)){
+
+  }
 
 }
 
@@ -238,8 +248,25 @@ function checkJumping() {
 // left or right according to DEFAULT_VELOCITY. Also be sure to mirror the
 // player's sprite left or right to avoid "moonwalking".
 function checkMovingLeftRight() {
+  if(keyIsDown(LEFT_ARROW)&& !keyIsDown(RIGHT_ARROW)){
+      player.mirrorX(-1);
+      if(playerGrounded){
+        player.changeAnimation("run");
 
-}
+      }
+      player.velocity.x = -DEFAULT_VELOCITY;
+  }
+  else if(keyIsDown(RIGHT_ARROW) && !keyIsDown(LEFT_ARROW)){
+      player.mirrorX(1);
+        player.changeAnimation("run");
+      }
+      player.velocity.x = +DEFAULT_VELOCITY;
+  }
+
+//if(keyIsDown(RIGHT_ARROW)&& !keyIsDown(LEFT_ARROW)){
+//}
+//else if(keyIsDown(LEFT_ARROW)&& !keyIsDown())
+//}
 
 // Check if the player has pressed the up arrow key. If the player is grounded
 // this should initiate the jump sequence, which can be extended by holding down
