@@ -8,7 +8,7 @@ var platformImageFirst, platformImageMiddle, platformImageLast;
 
 // Player Variables
 var player; //p5.play sprite
-var playerIdleAnimation, playerRunAnimation, playerJumpAnimation, playerFallAnimation;
+var playerIdleAnimation, playerRunAnimation, playerJumpAnimation, playerFallAnimation, playerSlashAnimation;
 var playerGrounded; // boolean
 var playerStartX, playerStartY;
 
@@ -26,7 +26,7 @@ var goalImage;
 // Physics Variables
 const GRAVITY = 0.5;
 const DEFAULT_VELOCITY = 5;
-const DEFAULT_JUMP_FORCE = -5;
+const DEFAULT_JUMP_FORCE = -10;
 var currentJumpForce;
 
 // Timing and Control Variables
@@ -108,10 +108,33 @@ function buildLevel() {
   collectables = new Group();
 
   // create platforms, monsters, and any other game objects
+    // best method is to draw sprites from left to right on the screen
+    createPlatform(50, 690, 5);
+    createCollectable(300, 340);
+    createMonster(500, 600, -2);
+    createCollectable(700, 440);
+
+    createPlatform(850, 645, 3);
+    createMonster(1085, 530, 0);
+    createCollectable(1085, 320);
+    createCollectable(1300, 420);
+
+    createPlatform(1450, 595, 4);
+    createCollectable(1600, 320);
+    createMonster(1730, 470, 0);
+    createCollectable(1730, 240);
+    createMonster(1860, 470, 0);
+
+    createPlatform(2050, 470, 2);
+    goal = createSprite(2115, 360);
+    goal.addImage(goalImage);
+
+  // create platforms, monsters, and any other game objects
   // best method is to draw sprites from left to right on the screen
   createPlatform(50, 690, 5);
   createCollectable(300, 340);
   createMonster(500, 200, -1);
+
 }
 
 // Creates a player sprite and adds animations and a collider to it
@@ -201,8 +224,9 @@ function applyGravity() {
 function checkCollisions() {
     player.collide(platforms, platformCollision);
     monsters.collide(platforms, platformCollision);
-    player.collide(monsters,playerMonsterCollision);
+    player.collide(monsters, playerMonsterCollision);
     player.overlap(collectables, getCollectable);
+    player.overlap(goal, executeWin);
 
 }
 
@@ -226,28 +250,25 @@ function platformCollision(sprite, platform) {
 function playerMonsterCollision(player, monster) {
   if(player.touching.bottom) {
     monster.remove();
+    var defeatedMonster = createSprite(monster.position.x, monster.position.y, 0, 0);
+    defeatedMonster.addImage(monsterDefeatImage);
+    defeatedMonster.mirrorX(monster.mirrorX());
+    defeatedMonster.scale = 0.25;
+    defeatedMonster.life = 40;
+    currentJumpTime = MAX_JUMP_TIME;
+    currentJumpForce = DEFAULT_JUMP_FORCE;
+    player.velocity.y = currentJumpForce;
+    millis = new Date();
+    score++;
   }
   else {
     executeLoss();
   }
-
-var defeatedMonster = createSprite(monster.position.x, monster.position.y, 0, 0);
-defeatedMonster.addImage(monsterDefeatImage);
-defeatedMonster.mirrorX(monster.mirrorX());
-defeatedMonster.scale = 0.25;
-defeatedMonster.life = 40;
-currentJumpTime = MAX_JUMP_TIME;
-currentJumpForce = DEFAULT_JUMP_FORCE;
-player.velocity.y = currentJumpForce;
-millis = new Date();
-score++;
-
-
 }
 
 // Callback function that runs when the player overlaps with a collectable.
 function getCollectable(player, collectable) {
-  kunai.remove();
+  collectable.remove();
 }
 
 // Updates the player's position and current animation by calling
@@ -349,6 +370,7 @@ function keyTyped() {
 function updateDisplay() {
   // clear the screen
   background(0, 0, 0);
+  camera.position.x = player.position.x;
 
   // briefly turn camera off before setting any static images or text
   camera.off()
@@ -367,12 +389,17 @@ function updateDisplay() {
   // set camera's x position to player's x position
   camera.position.x = player.position.x;
 
-}
+  for (var i = 0; i < collectables.length; i++){
+      collectables[i].rotation += 5;
+    }
+  }
 
 // Called when the player has won the game (e.g., reached the goal at the end).
 // Anything can happen here, but the most important thing is that we call resetGame()
 // after a short delay.
 function executeWin() {
+  noLoop();
+  setTimeout(resetGame, 1000);
 
 }
 
